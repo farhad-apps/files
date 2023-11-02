@@ -131,8 +131,6 @@ config_pam_auth() {
         fi
 
     fi
-    sudo systemctl restart ssh
-    sudo systemctl restart sshd
 }
 
 # Function to configure a cron job
@@ -211,6 +209,8 @@ complete_install(){
     # Remove the script file
     rm /var/rocket-ssh/install
 
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
 }
 
 
