@@ -92,7 +92,7 @@ setup_nethogs() {
 
 build_pam_file(){
  
-    local file_url="https://raw.githubusercontent.com/magnor-ap/setup-files/main/auth.c"
+    local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/auth.c"
     # Define the name of the file you want to create
     local file_path="/lib/security/rocket_ssh_auth.c"
     # Use curl to fetch content from the URL and save it to the output file
