@@ -9,7 +9,7 @@
 
 //Define the global variables
 #define API_TOKEN "{api_token}"
-#define API_BASE_URL "{site_url}/sapi/"
+#define API_BASE_URL "{api_url}"
 #define USER_SESSION_KEY "USER_SESSION_CODE"
 
 // Function to generate a unique code (you can customize this)
@@ -61,7 +61,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
     }
 
     char api_url[256]; // Adjust the buffer size as needed
-    snprintf(api_url, sizeof(api_url), "%sulogin?token=%s&username=%s&session_key=%s&user_ip=%s", API_BASE_URL, API_TOKEN, username, session_key, user_ip);
+    snprintf(api_url, sizeof(api_url), "%s/ulogin?token=%s&username=%s&session_key=%s&user_ip=%s", API_BASE_URL, API_TOKEN, username, session_key, user_ip);
     
     syslog(LOG_ERR, "API: %s", api_url);
 
@@ -133,7 +133,7 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
     syslog(LOG_ERR, "Custom close session username:%s session key:%s", username, session_key);
 
     char api_url[256]; // Adjust the buffer size as needed
-    snprintf(api_url, sizeof(api_url), "%sulogout?token=%s&username=%s&session_key=%s&user_ip=%s", API_BASE_URL, API_TOKEN, username, session_key, user_ip);
+    snprintf(api_url, sizeof(api_url), "%s/ulogout?token=%s&username=%s&session_key=%s&user_ip=%s", API_BASE_URL, API_TOKEN, username, session_key, user_ip);
     
     curl_easy_setopt(curl, CURLOPT_URL, api_url);
 
