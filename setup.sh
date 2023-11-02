@@ -27,7 +27,7 @@ config_needrestart() {
     if [ -e "$nrconf_file" ]; then
         echo '$nrconf{restart} = "a";' >> "$nrconf_file"
     fi
-
+    
 }
 
 # Function to install required packages
@@ -40,7 +40,7 @@ install_packages() {
     for package in "${packages[@]}"; do
         sudo apt-get install -y "$package"
     done
-
+    
 }
 
 
@@ -131,6 +131,9 @@ config_pam_auth() {
         fi
 
     fi
+    
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
 }
 
 # Function to configure a cron job
