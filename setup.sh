@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ssh_port=443
+ssh_port=23
 udp_port=7300
 api_token=""
 site_url=""
