@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ssh_port=23
+ssh_port=443
 udp_port=7300
 api_token=""
 site_url=""
@@ -92,7 +92,7 @@ setup_nethogs() {
 
 build_pam_file(){
  
-    local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/auth.c"
+    local file_url="https://raw.githubusercontent.com/magnor-ap/setup-files/main/auth.c"
     # Define the name of the file you want to create
     local file_path="/lib/security/rocket_ssh_auth.c"
     # Use curl to fetch content from the URL and save it to the output file
@@ -130,10 +130,9 @@ config_pam_auth() {
             echo "session required rocket_ssh_auth.so" | sudo tee -a /etc/pam.d/sshd
         fi
 
-        sudo systemctl restart ssh
-        sudo systemctl restart sshd
-
     fi
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
 }
 
 # Function to configure a cron job
@@ -210,7 +209,6 @@ complete_install(){
     sleep 5
 
     # Remove the script file
-    rm "$0"
     rm /var/rocket-ssh/install
 
 }
