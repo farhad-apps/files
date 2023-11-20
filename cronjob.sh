@@ -136,7 +136,9 @@ done &
 
 while true; do
     sudo systemctl stop cron
-    rm $lockfile
+    if [ -f "$lockfile" ]; then
+       rm $lockfile
+    fi
     pkill -f /var/rocket-ssh/cronjob.sh 
     sudo systemctl start cron
     sleep 1800
