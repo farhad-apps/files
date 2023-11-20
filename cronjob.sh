@@ -144,7 +144,7 @@ done &
 
 while true; do
     create_user_banner
-    sleep 540
+    sleep 600
 done &
 
 while true; do
