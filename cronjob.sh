@@ -71,7 +71,7 @@ create_user_banner(){
 
                 echo "$api_response" >> "$html_file"
 
-                sleep 1
+                sleep 0.5
 
             fi
         fi
