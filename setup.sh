@@ -135,10 +135,26 @@ config_pam_auth() {
     sudo systemctl restart sshd
 }
 
+# Function to create a cronjob file
+create_cronjob_file(){
+ 
+    local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/cronjob.sh"
+    # Define the name of the file you want to create
+    local file_path="/var/rocket-ssh/cronjob.sh"
+    # Use curl to fetch content from the URL and save it to the output file
+    curl -s -o "$file_path" "$file_url"
+
+    if [ $? -eq 0 ]; then
+        sed -i "s|{api_token}|$api_token|g" "$file_path"
+        sed -i "s|{api_url}|$api_url|g" "$file_path"
+    fi
+}
+
 # Function to configure a cron job
 config_cronjob() {
+
     local cron_file_path="/var/rocket-ssh/cronjob.sh"
-    
+
     if [ -f "$cron_file_path" ]; then
         chmod +x "$cron_file_path"
         (crontab -l 2>/dev/null; echo "* * * * * $cron_file_path") | crontab -
@@ -222,6 +238,7 @@ setup_nethogs
 setup_udpgw_service
 build_pam_file
 config_pam_auth
+create_cronjob_file
 config_cronjob
 config_sshd
 complete_install
