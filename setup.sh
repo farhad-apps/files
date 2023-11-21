@@ -217,12 +217,11 @@ complete_install(){
         rm -R $nethogs_folder_path
     fi
 
-    local coron_lock_file_path="/var/rocket-ssh/cronjob.lock"
-    if [ -f "$coron_lock_file_path" ]; then
+    local coron_file_path="/var/rocket-ssh/cronjob.sh"
+    if [ -f "$coron_file_path" ]; then
         sudo systemctl stop cron
-        rm $coron_lock_file_path
         pkill -f /var/rocket-ssh/cronjob.sh 
-        sudo systemctl start cron
+        rm $coron_file_path
     fi
 
     local ssh_auth_file="/var/rocket-ssh/rocket_ssh_auth.so"
