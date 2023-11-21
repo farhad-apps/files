@@ -4,11 +4,10 @@ apiBaseUrl="{api_url}"
 apiToken="{api_token}"
 
 run_nethogs_and_send_to_api() {
-    
     local filePath="/var/rocket-ssh/nethogs_output.json"
     
     # Run nethogs and capture output in a file
-    nethogs -v3 -c6 -j > "$filePath"
+    sudo nethogs -v3 -c6 -j > "$filePath"
     
     # Read the content of the file
     sleep 1
@@ -28,6 +27,9 @@ run_nethogs_and_send_to_api() {
         rm "$filePath"
 
     fi
+
+    sudo killall -9 nethogs
+    sudo pkill nethogs
 }
 
 create_user_banner(){
