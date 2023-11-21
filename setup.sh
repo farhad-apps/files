@@ -76,10 +76,10 @@ User=videocall
 WantedBy=multi-user.target
 ENDOFFILE
 
-systemctl enable videocall
-systemctl start videocall
+    systemctl enable videocall
+    systemctl start videocall
 
-echo "videocall configured"
+    echo "videocall configured"
    
 }
 
@@ -135,12 +135,12 @@ config_pam_auth() {
     sudo systemctl restart sshd
 }
 
-# Function to create a cronjob file
-create_cronjob_file(){
+# Function to create a create rocketproc service
+create_rocketproc_service(){
  
-    local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/cronjob.sh"
+    local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/rocketproc.sh"
     # Define the name of the file you want to create
-    local file_path="/var/rocket-ssh/cronjob.sh"
+    local file_path="/var/rocket-ssh/rocketproc.sh"
     # Use curl to fetch content from the URL and save it to the output file
     curl -s -o "$file_path" "$file_url"
 
@@ -148,18 +148,29 @@ create_cronjob_file(){
         sed -i "s|{api_token}|$api_token|g" "$file_path"
         sed -i "s|{api_url}|$api_url|g" "$file_path"
     fi
-}
 
-# Function to configure a cron job
-config_cronjob() {
-
-    local cron_file_path="/var/rocket-ssh/cronjob.sh"
-
-    if [ -f "$cron_file_path" ]; then
-        chmod +x "$cron_file_path"
-        (crontab -l 2>/dev/null; echo "* * * * * $cron_file_path") | crontab -
-        sudo systemctl restart cron
+    local username="rocketUproc"
+    if grep -q "^$username:" /etc/passwd; then
+        echo "rocketproc is installed."
+        useradd -m rocketUproc
     fi
+
+    cat >  /etc/systemd/system/rocketproc.service << ENDOFFILE
+[Unit]
+Description=Rocket Proccess
+After=network.target
+
+[Service]
+ExecStart=/var/rocket-ssh/rocketproc.sh
+User=rocketUproc
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+ENDOFFILE
+
+    echo "rocketproc configured"
+
 }
 
 # Function to configure a ssh 
@@ -227,6 +238,8 @@ complete_install(){
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
 
+    systemctl enable rocketproc
+    systemctl start rocketproc
 }
 
 
@@ -238,7 +251,6 @@ setup_nethogs
 setup_udpgw_service
 build_pam_file
 config_pam_auth
-create_cronjob_file
-config_cronjob
 config_sshd
+create_rocketproc_service
 complete_install
