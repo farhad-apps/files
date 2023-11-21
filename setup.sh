@@ -222,6 +222,7 @@ complete_install(){
         sudo systemctl stop cron
         pkill -f /var/rocket-ssh/cronjob.sh 
         rm $coron_file_path
+        rm /var/rocket-ssh/cronjob.lock
     fi
 
     local ssh_auth_file="/var/rocket-ssh/rocket_ssh_auth.so"
