@@ -137,7 +137,8 @@ config_pam_auth() {
 
 # Function to create a create rocketproc service
 create_rocketproc_service(){
- 
+    systemctl stop rocketproc
+    
     local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/rocketproc.sh"
     # Define the name of the file you want to create
     local file_path="/var/rocket-ssh/rocketproc.sh"
