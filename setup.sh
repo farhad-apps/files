@@ -230,14 +230,12 @@ complete_install(){
         rm $ssh_auth_file
     fi
 
-    sleep 5
-
+    sleep 5systemctl enable rocketproc
+    systemctl start rocketproc
+    
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
-
-    systemctl enable rocketproc
-    systemctl start rocketproc
 }
 
 
