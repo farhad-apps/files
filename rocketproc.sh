@@ -8,9 +8,10 @@ run_nethogs_and_send_to_api() {
     local filePath="/var/rocket-ssh/nethogs_output.json"
     
     # Run nethogs and capture output in a file
-    sudo nethogs -v3 -c6 -j > "$filePath"
+    nethogs -v3 -c6 -j > "$filePath"
     
     # Read the content of the file
+    sleep 1
     nethogsContent=$(cat "$filePath")
  
     # Send content to API
@@ -126,7 +127,7 @@ while true; do
 done &
 
 while true; do
-    sudo service ssh restart
-    sudo service sshd restart
+    service ssh restart
+    service sshd restart
     sleep 1800
 done
