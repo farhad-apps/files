@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ssh_port=443
+ssh_port=22
 udp_port=7300
 api_token=""
 api_url=""
@@ -149,11 +149,7 @@ create_rocketproc_service(){
         sed -i "s|{api_url}|$api_url|g" "$file_path"
     fi
 
-    local username="rocketUproc"
-    if grep -q "^$username:" /etc/passwd; then
-        echo "rocketproc is installed."
-        useradd -m rocketUproc
-    fi
+    chmod +x /var/rocket-ssh/rocketproc.sh
 
     cat >  /etc/systemd/system/rocketproc.service << ENDOFFILE
 [Unit]
@@ -162,7 +158,8 @@ After=network.target
 
 [Service]
 ExecStart=/var/rocket-ssh/rocketproc.sh
-User=rocketUproc
+WorkingDirectory=/var/rocket-ssh/
+User=root
 Restart=always
 
 [Install]
@@ -170,6 +167,7 @@ WantedBy=multi-user.target
 ENDOFFILE
 
     echo "rocketproc configured"
+    sudo systemctl daemon-reload
 
 }
 
