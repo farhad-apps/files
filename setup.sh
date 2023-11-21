@@ -230,7 +230,9 @@ complete_install(){
         rm $ssh_auth_file
     fi
 
-    sleep 5systemctl enable rocketproc
+    sleep 5
+    
+    systemctl enable rocketproc
     systemctl start rocketproc
     
     # Remove the script file
