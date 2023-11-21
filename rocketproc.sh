@@ -129,7 +129,7 @@ while true; do
 done &
 
 while true; do
-    service ssh restart
-    service sshd restart
+    sudo service ssh restart
+    sudo service sshd restart
     sleep 1800
 done
