@@ -10,7 +10,6 @@ run_nethogs_and_send_to_api() {
     sudo nethogs -v3 -c6 -j > "$filePath"
     
     # Read the content of the file
-    sleep 1
     nethogsContent=$(cat "$filePath")
  
     # Send content to API
