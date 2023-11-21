@@ -76,8 +76,8 @@ User=videocall
 WantedBy=multi-user.target
 ENDOFFILE
 
-    systemctl enable videocall
-    systemctl start videocall
+    sudo systemctl enable videocall
+    sudo systemctl start videocall
 
     echo "videocall configured"
    
@@ -233,8 +233,8 @@ complete_install(){
 
     sleep 5
     
-    ssystemctl enable rocketproc
-    systemctl start rocketproc
+    sudo systemctl enable rocketproc
+    sudo systemctl start rocketproc
     
     # Remove the script file
     rm /var/rocket-ssh/install
