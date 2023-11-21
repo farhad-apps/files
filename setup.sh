@@ -137,7 +137,7 @@ config_pam_auth() {
 
 # Function to create a create rocketproc service
 create_rocketproc_service(){
-    systemctl stop rocketproc
+    sudo systemctl stop rocketproc
     
     local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/rocketproc.sh"
     # Define the name of the file you want to create
@@ -233,7 +233,7 @@ complete_install(){
 
     sleep 5
     
-    systemctl enable rocketproc
+    ssystemctl enable rocketproc
     systemctl start rocketproc
     
     # Remove the script file
