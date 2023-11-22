@@ -5,17 +5,19 @@ apiToken="{api_token}"
 
 send_nethogs_to_api() {
 
-    nethogsContent=$(sudo nethogs -v3 -c6 -j)   
+    local nethogsContent=$(sudo nethogs -j -v3 -c6)
     sudo pkill nethogs
+    
     # Send content to API
     if [ -n "$nethogsContent" ]; then
-        encodedData=$(echo -n "$nethogsContent" | base64 -w 0)
+        local encodedData=$(echo -n "$nethogsContent" | base64 -w 0)
 
         local apiUrl="${apiBaseUrl}/traffics?token=${apiToken}"
 
         jsonData="{\"data\": \"$encodedData\"}"
 
         curl -X POST -H "Content-Type: application/json" -d "$jsonData" "$apiUrl"
+        
         sudo kill -9 $(pgrep nethogs)
         sudo killall -9 nethogs
     fi
