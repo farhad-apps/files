@@ -33,7 +33,7 @@ config_needrestart() {
 # Function to install required packages
 install_packages() {
     
-    local packages=("build-essential" "libpam0g-dev" "libcurl4-openssl-dev" "cmake" "net-tools")
+    local packages=("build-essential" "libpam0g-dev" "libcurl4-openssl-dev" "cmake" "net-tools" "curl")
     
     sudo apt-get update
 
