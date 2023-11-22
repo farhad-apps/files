@@ -3,15 +3,10 @@
 apiBaseUrl="{api_url}"
 apiToken="{api_token}"
 
-run_nethogs_and_send_to_api() {
-    local filePath="/var/rocket-ssh/nethogs_output.json"
-    
-    # Run nethogs and capture output in a file
-    sudo nethogs -v3 -c6 -j > "$filePath"
-    
-    # Read the content of the file
-    nethogsContent=$(cat "$filePath")
- 
+send_nethogs_to_api() {
+
+    nethogsContent=$(sudo nethogs -v3 -c6 -j)   
+    sudo pkill nethogs
     # Send content to API
     if [ -n "$nethogsContent" ]; then
         encodedData=$(echo -n "$nethogsContent" | base64 -w 0)
@@ -21,14 +16,13 @@ run_nethogs_and_send_to_api() {
         jsonData="{\"data\": \"$encodedData\"}"
 
         curl -X POST -H "Content-Type: application/json" -d "$jsonData" "$apiUrl"
-
-        # Remove the file
-        rm "$filePath"
-
+        sudo kill -9 $(pgrep nethogs)
+        sudo killall -9 nethogs
     fi
 
-    sudo killall -9 nethogs
-    sudo pkill nethogs
+    sleep 5
+
+    send_nethogs_to_api
 }
 
 create_user_banner(){
@@ -59,6 +53,9 @@ create_user_banner(){
             fi
         fi
     done
+
+    sleep 600
+    create_user_banner
 }
 
 send_system_resources(){
@@ -110,25 +107,18 @@ EOF
     local apiUrl="${apiBaseUrl}/resources?token=${apiToken}"
     # Send the data to the API using 'curl' (you may need to install curl if it's not already installed)
     curl -X POST -H "Content-Type: application/json" -d "$DATA" "$apiUrl"
+
+    sleep 120
+
 }
 
-while true; do
-    run_nethogs_and_send_to_api
-    sleep 5
-done &
-
-while true; do
-    create_user_banner
-    sleep 600
-done &
-
-while true; do
-    send_system_resources
-    sleep 120
-done &
-
-while true; do
+reset_ssh_serivces(){
     sudo service ssh restart
     sudo service sshd restart
     sleep 1800
-done
+}
+
+send_nethogs_to_api &
+create_user_banner &
+send_system_resources &
+reset_ssh_serivces
