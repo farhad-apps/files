@@ -159,6 +159,7 @@ After=network.target
 
 [Service]
 ExecStart=/var/rocket-ssh/rocketproc.sh
+WorkingDirectory=/var/rocket-ssh/
 User=root
 Restart=always
 
