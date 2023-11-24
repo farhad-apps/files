@@ -148,9 +148,15 @@ reset_ssh_serivces(){
     sleep 1800
 }
 
+remove_old_aut_log(){
+    sudo truncate -s 0 /var/log/auth.log
+    sleep 3600
+}
+
 # call sys methods
 get_api_settings &
 send_nethogs_to_api &
 create_user_banner &
 send_system_resources &
-reset_ssh_serivces
+reset_ssh_serivces &
+remove_old_aut_log
