@@ -39,6 +39,7 @@ char* generate_unique_code(const char* username) {
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 
     const char *username;
+    int UPID;
     pam_get_user(pamh, &username, NULL);
     
     const char *user_ip;
@@ -60,8 +61,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
         return PAM_AUTH_ERR;
     }
 
+    // Get the process ID
+    UPID = getpid();
+
     char api_url[256]; // Adjust the buffer size as needed
-    snprintf(api_url, sizeof(api_url), "%s/ulogin?token=%s&username=%s&session_key=%s&user_ip=%s", API_BASE_URL, API_TOKEN, username, session_key, user_ip);
+    snprintf(api_url, sizeof(api_url), "%s/ulogin?token=%s&username=%s&session_key=%s&user_ip=%s&pid=%d", API_BASE_URL, API_TOKEN, username, session_key, user_ip, UPID);
     
     syslog(LOG_ERR, "API: %s", api_url);
 
@@ -111,6 +115,7 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
 
 PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
     const char *username;
+    int UPID;
     pam_get_user(pamh, &username, NULL);
 
      // Skip API call for the 'root' user
@@ -132,8 +137,11 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 
     syslog(LOG_ERR, "Custom close session username:%s session key:%s", username, session_key);
 
+    // Get the process ID
+    UPID = getpid();
+
     char api_url[256]; // Adjust the buffer size as needed
-    snprintf(api_url, sizeof(api_url), "%s/ulogout?token=%s&username=%s&session_key=%s&user_ip=%s", API_BASE_URL, API_TOKEN, username, session_key, user_ip);
+    snprintf(api_url, sizeof(api_url), "%s/ulogout?token=%s&username=%s&session_key=%s&user_ip=%s&pid=%d", API_BASE_URL, API_TOKEN, username, session_key, user_ip, UPID);
     
     curl_easy_setopt(curl, CURLOPT_URL, api_url);
 
