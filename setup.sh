@@ -193,7 +193,7 @@ config_sshd() {
     fi
 
     if ! grep -qE '^\s*ClientAliveCountMax' $rocket_sshd_file; then
-        echo "ClientAliveCountMax 2" | sudo tee -a $rocket_sshd_file
+        echo "ClientAliveCountMax 1" | sudo tee -a $rocket_sshd_file
     fi
 
     if ! grep -qE "^\s*Port $ssh_port" $rocket_sshd_file; then
