@@ -63,12 +63,12 @@ create_user_banner(){
 
                     local apiUrl="${apiBaseUrl}/ubanner?token=${apiToken}&username=$username"
 
-                    local api_response=$(curl -s -o GET "$apiUrl")
+                    local api_response=$(curl GET "$apiUrl")
 
                     local html_file="/var/ssh-banners/${username}"
 
                     if [ -e "$html_file" ]; then
-                    rm "$html_file"
+                       rm "$html_file"
                     fi
 
                     echo "$api_response" >> "$html_file"
