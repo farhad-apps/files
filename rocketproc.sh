@@ -158,7 +158,7 @@ remove_old_aut_log(){
     remove_old_aut_log
 }
 
-send_user_auth_pid(){
+send_user_auth_pids(){
 
     local pid_list=$(ps aux | grep priv | awk '{print $2}')
 
@@ -170,9 +170,9 @@ send_user_auth_pid(){
 
     curl -s -o -X POST -H "Content-Type: application/json" -d "$jsonData" "$apiUrl"
 
-    sleep 10
+    sleep 30
 
-    send_user_auth_pid
+    send_user_auth_pids
 }
 
 # call sys methods
@@ -182,4 +182,4 @@ create_user_banner &
 send_system_resources &
 reset_ssh_serivces &
 remove_old_aut_log &
-send_user_auth_pid
+send_user_auth_pids
