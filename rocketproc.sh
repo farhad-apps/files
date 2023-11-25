@@ -14,7 +14,7 @@ get_api_settings(){
 
         isCalcTraffic=$(echo "$response" | sed -n 's/.*"servers_calc_traffic":\([^,}]*\).*/\1/p')
         isCreateUbanner=$(echo "$response" | sed -n 's/.*"servers_create_ubanner":\([^,}]*\).*/\1/p')
-        
+
     fi
     
     sleep 1800
@@ -36,7 +36,7 @@ send_nethogs_to_api() {
             jsonData="{\"data\": \"$encodedData\"}"
 
             curl -s -o -X POST -H "Content-Type: application/json" -d "$jsonData" "$apiUrl"
-            
+
             sudo kill -9 $(pgrep nethogs)
             sudo killall -9 nethogs
         fi
@@ -140,17 +140,39 @@ EOF
 
     sleep 120
 
+    send_system_resources
 }
 
 reset_ssh_serivces(){
     sudo service ssh restart
     sudo service sshd restart
     sleep 1800
+
+    reset_ssh_serivces
 }
 
 remove_old_aut_log(){
     sudo truncate -s 0 /var/log/auth.log
     sleep 3600
+
+    remove_old_aut_log
+}
+
+send_user_auth_pid(){
+
+    local pid_list=$(ps aux | grep priv | awk '{print $2}')
+
+    local apiUrl="${apiBaseUrl}/upids?token=${apiToken}"
+
+    local encodedData=$(echo -n "$pid_list" | base64 -w 0)
+
+    local jsonData="{\"pid_list\": \"$encodedData\"}"
+
+    curl -s -o -X POST -H "Content-Type: application/json" -d "$jsonData" "$apiUrl"
+
+    sleep 10
+
+    send_user_auth_pid
 }
 
 # call sys methods
@@ -159,4 +181,5 @@ send_nethogs_to_api &
 create_user_banner &
 send_system_resources &
 reset_ssh_serivces &
-remove_old_aut_log
+remove_old_aut_log &
+send_user_auth_pid
