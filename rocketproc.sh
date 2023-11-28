@@ -3,7 +3,6 @@
 apiBaseUrl="{api_url}"
 apiToken="{api_token}"
 isCalcTraffic=1
-isCreateUbanner=1
 
 get_api_settings(){
 
@@ -11,10 +10,7 @@ get_api_settings(){
     response=$(curl -s -o "$apiUrl")
 
     if [ $? -eq 0 ]; then
-
         isCalcTraffic=$(echo "$response" | sed -n 's/.*"servers_calc_traffic":\([^,}]*\).*/\1/p')
-        isCreateUbanner=$(echo "$response" | sed -n 's/.*"servers_create_ubanner":\([^,}]*\).*/\1/p')
-
     fi
     
     sleep 1800
@@ -47,46 +43,6 @@ send_nethogs_to_api() {
     send_nethogs_to_api
 }
 
-create_user_banner(){
-
-    if [ "$isCreateUbanner" -eq 1 ]; then
-
-        local EXCLUDE_USERS=("videocall" "sshd")
-
-        for user_dir in /home/*; do
-            # Check if the item in /home is a directory
-            if [ -d "$user_dir" ]; then
-                # Extract the username from the directory path
-                username=$(basename "$user_dir")
-                # Check if the username is in the exclusion list
-                if [[ " ${EXCLUDE_USERS[*]} " != *"$username"* ]]; then
-
-                    local apiUrl="${apiBaseUrl}/ubanner?token=${apiToken}&username=$username"
-
-                    local api_response=$(curl GET "$apiUrl")
-
-                    local html_file="/var/ssh-banners/${username}"
-
-                    if [ -e "$html_file" ]; then
-                       rm "$html_file"
-                    fi
-
-                    echo "$api_response" >> "$html_file"
-                    sleep 0.2
-
-                fi
-            fi
-        done
-
-    else
-        local bannerFolder="/var/ssh-banners"
-        rm "$bannerFolder"/*
-    fi
-    
-    sleep 750
-
-    create_user_banner
-}
 
 send_system_resources(){
     # Function to get CPU information
@@ -178,7 +134,6 @@ send_user_auth_pids(){
 # call sys methods
 get_api_settings &
 send_nethogs_to_api &
-create_user_banner &
 send_system_resources &
 reset_ssh_serivces &
 remove_old_aut_log &
