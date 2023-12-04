@@ -201,6 +201,8 @@ config_pam_auth() {
         fi
     fi
 
+    sleep 5
+
     sudo systemctl restart ssh
     sudo systemctl restart sshd
 }
@@ -234,9 +236,11 @@ config_sshd() {
         echo "Port $ssh_port" | sudo tee -a $rocket_sshd_file
     fi
 
+
+    sleep 5
+
     sudo systemctl restart ssh
     sudo systemctl restart sshd
-
 }
 
 complete_install(){
@@ -265,13 +269,8 @@ complete_install(){
         rm $ssh_auth_file
     fi
 
-    sudo systemctl restart ssh
-    sudo systemctl restart sshd
-
     sleep 5
     
-    sudo systemctl restart ssh
-    sudo systemctl restart sshd
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
