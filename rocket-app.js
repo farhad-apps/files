@@ -8,7 +8,7 @@ const API_URL = "{api_url}";
 const API_TOKEN = "{api_token}";
 
 var settings = {
-  calc_traffic: 0,
+  calc_traffic: 1,
 };
 
 const runCmd = (command) => {
@@ -243,51 +243,50 @@ const LoopMethods = {
     sendToApi("settings")
       .then((result) => {
         result = JSON.parse(result);
-        settings.calc_traffic = result.servers_calc_traffic;
-        console.log("getSettings");
-        setTimeout(LoopMethods.getSettings, 1800 * 1000);
+        const { servers_calc_traffic } = result;
+        settings.calc_traffic = parseInt(servers_calc_traffic);
+        setTimeout(LoopMethods.getSettings, 10 * 60 * 1000);
       })
       .catch((err) => {
-        console.log("getSettings");
-        setTimeout(LoopMethods.getSettings, 1800 * 1000);
+        setTimeout(LoopMethods.getSettings, 10 * 60 * 1000);
       });
   },
   sendTraffic: async () => {
-    const command = "sudo nethogs -j -v3 -c6";
-    runCmd(command)
-      .then((res) => {
-        runCmd(`sudo pkill nethogs`);
-        const { stdout } = res;
+    if (settings.calc_traffic) {
+      const command = "sudo nethogs -j -v3 -c6";
+      runCmd(command)
+        .then((res) => {
+          runCmd(`sudo pkill nethogs`);
+          const { stdout } = res;
 
-        if (stdout) {
-          const base64Encoded = Buffer.from(stdout).toString("base64");
-          const pdata = JSON.stringify({ data: base64Encoded });
-          sendToApi("traffics", pdata);
-        }
-        runCmd("pgrep nethogs").then((result) => {
-          const { stdout } = result;
           if (stdout) {
-            runCmd(`sudo kill -9 ${stdout}`);
-            runCmd("sudo killall -9 nethogs");
+            const base64Encoded = Buffer.from(stdout).toString("base64");
+            const pdata = JSON.stringify({ data: base64Encoded });
+            sendToApi("traffics", pdata);
           }
+          runCmd("pgrep nethogs").then((result) => {
+            const { stdout } = result;
+            if (stdout) {
+              runCmd(`sudo kill -9 ${stdout}`);
+              runCmd("sudo killall -9 nethogs");
+            }
+          });
+          setTimeout(LoopMethods.sendTraffic, 5000);
+        })
+        .catch((err) => {
+          setTimeout(LoopMethods.sendTraffic, 5000);
         });
-        console.log("sendTraffic");
-        setTimeout(LoopMethods.sendTraffic, 5000);
-      })
-      .catch((err) => {
-        console.log("sendTraffic");
-        setTimeout(LoopMethods.sendTraffic, 5000);
-      });
+    } else {
+      setTimeout(LoopMethods.sendTraffic, 5000);
+    }
   },
   resetSshSerivces: async () => {
     runCmd("sudo service ssh restart");
     runCmd("sudo service sshd restart");
-    console.log("restart ssh");
     setTimeout(LoopMethods.resetSshSerivces, 1800 * 1000);
   },
   removeAuthLog: async () => {
     runCmd("sudo truncate -s 0 /var/log/auth.log");
-    console.log("truncate auth.log");
     setTimeout(LoopMethods.removeAuthLog, 3600 * 1000);
   },
   sendUsersAuthPids: async () => {
@@ -299,11 +298,9 @@ const LoopMethods = {
           const pdata = JSON.stringify({ pid_list: base64Encoded });
           sendToApi("upids", pdata);
         }
-        console.log("send Pids");
         setTimeout(LoopMethods.sendUsersAuthPids, 10 * 1000);
       })
       .catch((err) => {
-        console.log("send Pids");
         setTimeout(LoopMethods.sendUsersAuthPids, 10 * 1000);
       });
   },
@@ -312,7 +309,6 @@ const LoopMethods = {
 const hanldeApiAction = async (pdata) => {
   try {
     const action = pdata.action;
-    console.log("action", action);
     if (action === "create-users") {
       const { users } = pdata;
       if (users && Array.isArray(users)) {
@@ -322,7 +318,6 @@ const hanldeApiAction = async (pdata) => {
       }
     } else if (action === "remove-users") {
       const { users } = pdata;
-      console.log("users",users);
       if (users && Array.isArray(users)) {
         for (var user of users) {
           await apiActions.removeUser(user);
@@ -384,7 +379,6 @@ const server = http.createServer(async (req, res) => {
     //handle actions
     if (pdata) {
       pdata = JSON.parse(pdata);
-      console.log("pdata", pdata);
       try {
         var result = await hanldeApiAction(pdata);
         res.writeHead(200, { "Content-Type": "application/json" });
