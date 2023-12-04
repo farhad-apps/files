@@ -144,7 +144,6 @@ const helpers = {
     const { stdout } = await runCmd("netstat -e -n -i | grep 'TX packets' | grep -v 'TX packets 0' | grep -v ' B)' | awk '{print $5}'");
     if (stdout) {
       const outputArray = stdout.split(/\r\n|\n|\r/);
-      console.log("outputArray",outputArray);
       outputArray.forEach((value) => {
         upload += parseInt(value);
       });
@@ -167,6 +166,10 @@ const apiActions = {
     const { username } = pdata;
     await helpers.removeUser(username);
   },
+  killUser: async (pdata) => {
+    const { username } = pdata;
+    await helpers.killUser(username);
+  },
   updateUser: async (pdata) => {
     const { username, password } = pdata;
     await helpers.killUser(username);
@@ -188,7 +191,8 @@ const apiActions = {
 const sendToApi = (endpoint, pdata = false) => {
   return new Promise((resolve, reject) => {
     const urlPath = `/sapi/${endpoint}?token=${API_TOKEN}`;
-    const baseUrl = API_URL.replace(/^https?:\/\//, "");
+    const baseUrlPath = new URL(API_URL);
+    const baseUrl = baseUrlPath.host;
 
     const options = {
       hostname: baseUrl,
@@ -308,16 +312,40 @@ const LoopMethods = {
 const hanldeApiAction = async (pdata) => {
   try {
     const action = pdata.action;
-    if (action === "create-user") {
-      apiActions.createUser(pdata);
-    } else if (action === "remove-user") {
-      apiActions.removeUser(pdata);
+    console.log("action", action);
+    if (action === "create-users") {
+      const { users } = pdata;
+      if (users && Array.isArray(users)) {
+        for (var user of users) {
+          await apiActions.createUser(user);
+        }
+      }
+    } else if (action === "remove-users") {
+      const { users } = pdata;
+      console.log("users",users);
+      if (users && Array.isArray(users)) {
+        for (var user of users) {
+          await apiActions.removeUser(user);
+        }
+      }
     } else if (action === "resources") {
       return await helpers.sysResources();
     } else if (action === "kill-upid") {
       apiActions.killUserByPid(pdata);
-    } else if (action === "update-user") {
-      apiActions.updateUser(pdata);
+    } else if (action === "update-users") {
+      const { users } = pdata;
+      if (users && Array.isArray(users)) {
+        for (var user of users) {
+          await apiActions.updateUser(user);
+        }
+      }
+    } else if (action === "kill-users") {
+      const { users } = pdata;
+      if (users && Array.isArray(users)) {
+        for (var user of users) {
+          await apiActions.killUser(user);
+        }
+      }
     }
   } catch (err) {
     console.log("error hanldeApiAction", err);
