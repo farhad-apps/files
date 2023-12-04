@@ -265,8 +265,13 @@ complete_install(){
         rm $ssh_auth_file
     fi
 
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
+
     sleep 5
     
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
