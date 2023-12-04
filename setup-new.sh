@@ -109,7 +109,8 @@ startretries=3
 user=root
 ENDOFFILE
 
-sudo supervisorctl start rocketApp
+    sudo service supervisor restart
+    sudo supervisorctl start rocketApp
 }
 
 
