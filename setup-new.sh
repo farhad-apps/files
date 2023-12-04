@@ -201,10 +201,6 @@ config_pam_auth() {
         fi
     fi
 
-    sleep 5
-
-    sudo systemctl restart ssh
-    sudo systemctl restart sshd
 }
 
 
@@ -225,22 +221,17 @@ config_sshd() {
     sudo sed -i '/^#\s*Port 22/s/^#//' /etc/ssh/sshd_config
 
     if ! grep -qE '^\s*ClientAliveInterval' $rocket_sshd_file; then
-         echo "ClientAliveInterval 60" | sudo tee -a $rocket_sshd_file
+         echo "ClientAliveInterval 30" | sudo tee -a $rocket_sshd_file
     fi
 
     if ! grep -qE '^\s*ClientAliveCountMax' $rocket_sshd_file; then
-        echo "ClientAliveCountMax 2" | sudo tee -a $rocket_sshd_file
+        echo "ClientAliveCountMax 1" | sudo tee -a $rocket_sshd_file
     fi
 
     if ! grep -qE "^\s*Port $ssh_port" $rocket_sshd_file; then
         echo "Port $ssh_port" | sudo tee -a $rocket_sshd_file
     fi
 
-
-    sleep 5
-
-    sudo systemctl restart ssh
-    sudo systemctl restart sshd
 }
 
 complete_install(){
@@ -271,6 +262,9 @@ complete_install(){
 
     sleep 5
     
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
+
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
