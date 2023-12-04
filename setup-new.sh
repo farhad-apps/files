@@ -234,6 +234,18 @@ config_sshd() {
 
 }
 
+remove_rocketproc_service(){
+
+    local file_path="/etc/systemd/system/rocketproc.service"
+    
+    if [ -f "$file_path" ]; then
+        sudo systemctl stop rocketproc
+        sudo systemctl disable rocketproc
+        sudo rm $file_path
+        sudo systemctl daemon-reload
+    fi
+}
+
 complete_install(){
     echo "complete" > /var/rocket-ssh/status.txt
 
@@ -281,6 +293,7 @@ build_pam_file
 config_pam_auth
 config_sshd
 configure_nginx
+remove_rocketproc_service
 configure_rocket_app
 configure_supervisor
 complete_install
