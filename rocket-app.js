@@ -167,6 +167,7 @@ const apiActions = {
   removeUser: async (pdata) => {
     const { username } = pdata;
     await helpers.removeUser(username);
+    await helpers.killUser(username);
   },
   killUser: async (pdata) => {
     const { username } = pdata;
