@@ -1,6 +1,8 @@
 const http = require("http");
 const { exec } = require("child_process");
 const os = require("os");
+const fs = require("fs");
+const path = require("path");
 const process = require("process");
 const { Buffer } = require("buffer");
 
@@ -194,14 +196,17 @@ const sendToApi = (endpoint, pdata = false) => {
     const baseUrlPath = new URL(API_URL);
     const baseUrl = baseUrlPath.host;
 
+
     const options = {
       hostname: baseUrl,
-      port: 80,
+      port: 443,
       path: urlPath,
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
+      key:  fs.readFileSync(path.resolve(__dirname, 'key.pem')),
+      cert: fs.readFileSync(path.resolve(__dirname, 'cert.pem')),
     };
     if (pdata) {
       options.method = "POST";
