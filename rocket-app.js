@@ -197,7 +197,6 @@ const sendToApi = (endpoint, pdata = false) => {
     const baseUrlPath = new URL(API_URL);
     const baseUrl = baseUrlPath.host;
 
-
     const options = {
       hostname: baseUrl,
       port: 80,
