@@ -199,14 +199,12 @@ const sendToApi = (endpoint, pdata = false) => {
 
     const options = {
       hostname: baseUrl,
-      port: 443,
+      port: 80,
       path: urlPath,
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      key:  fs.readFileSync(path.resolve(__dirname, 'key.pem')),
-      cert: fs.readFileSync(path.resolve(__dirname, 'cert.pem')),
     };
     if (pdata) {
       options.method = "POST";
