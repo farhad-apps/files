@@ -253,6 +253,9 @@ remove_rocketproc_service(){
 complete_install(){
     echo "complete" > /var/rocket-ssh/status.txt
 
+    sudo systemctl restart ssh
+    sudo systemctl restart sshd
+    
     local conf_file_path="/var/rocket-ssh/rocket_config.txt"
     if [ -f "$so_file_path" ]; then
         rm $conf_file_path
@@ -278,9 +281,6 @@ complete_install(){
 
     sleep 5
     
-    sudo systemctl restart ssh
-    sudo systemctl restart sshd
-
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
