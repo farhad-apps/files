@@ -85,7 +85,9 @@ configure_rocket_app(){
         sed -i "s|{api_url}|$api_url|g" "$file_path"
     fi
 
-    openssl req -x509 -newkey rsa:2048 -keyout /var/rocket-ssh/key.pem -out /var/rocket-ssh/cert.pem -days 3650 -nodes
+    openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+        -subj "/C=GB/ST=London/L=London/O=Global Security/OU=R&D Department/CN=example.com" \
+        -keyout /var/rocket-ssh/key.pem -out /var/rocket-ssh/cert.pem
 
 }
 
