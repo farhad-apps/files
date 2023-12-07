@@ -166,8 +166,8 @@ const apiActions = {
   },
   removeUser: async (pdata) => {
     const { username } = pdata;
-    await helpers.removeUser(username);
     await helpers.killUser(username);
+    await helpers.removeUser(username);
   },
   killUser: async (pdata) => {
     const { username } = pdata;
@@ -359,7 +359,7 @@ const server = http.createServer(async (req, res) => {
   const sendMethod = req.method;
   const authToken = req.headers["x-auth"];
 
-  if (authToken !== "123456") {
+  if (authToken !== "p5c23cb5nopit1ak3g6nbfqv84hewl") {
     res.writeHead(401, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Unauthorized" }));
     return;
