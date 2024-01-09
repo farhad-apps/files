@@ -2,7 +2,7 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 clear
-ciscoportt=443
+ciscoportt=2020
 sh_ver="1.0.5"
 file="/usr/local/sbin/ocserv"
 conf_file="/etc/ocserv"
