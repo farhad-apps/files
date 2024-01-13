@@ -150,7 +150,7 @@ Installation_dependency(){
         cat /etc/issue |grep 9\..*>/dev/null
         if [[ $? = 0 ]]; then
             apt-get update
-            apt-get install vim net-tools pkg-config build-essential libgnutls28-dev libwrap0-dev liblz4-dev libseccomp-dev libreadline-dev libnl-nf-3-dev libev-dev gnutls-bin -y
+            apt-get install ocserv vim net-tools pkg-config build-essential libgnutls28-dev libwrap0-dev liblz4-dev libseccomp-dev libreadline-dev libnl-nf-3-dev libev-dev gnutls-bin -y
         else
             mv /etc/apt/sources.list /etc/apt/sources.list.bak
             wget --no-check-certificate -O "/etc/apt/sources.list" "https://raw.githubusercontent.com/ToyoDAdoubiBackup/doubi/master/sources/us.sources.list"
