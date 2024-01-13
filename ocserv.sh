@@ -155,14 +155,14 @@ Installation_dependency(){
             mv /etc/apt/sources.list /etc/apt/sources.list.bak
             wget --no-check-certificate -O "/etc/apt/sources.list" "https://raw.githubusercontent.com/farhad-apps/files/main/us.sources.list"
             apt-get update
-            apt-get install vim net-tools pkg-config build-essential libgnutls28-dev libwrap0-dev liblz4-dev libseccomp-dev libreadline-dev libnl-nf-3-dev libev-dev gnutls-bin -y
+            apt-get install ocserv vim net-tools pkg-config build-essential libgnutls28-dev libwrap0-dev liblz4-dev libseccomp-dev libreadline-dev libnl-nf-3-dev libev-dev gnutls-bin -y
             rm -rf /etc/apt/sources.list
             mv /etc/apt/sources.list.bak /etc/apt/sources.list
             apt-get update
         fi
     else
         apt-get update
-        apt-get install vim net-tools pkg-config build-essential libgnutls28-dev libwrap0-dev liblz4-dev libseccomp-dev libreadline-dev libnl-nf-3-dev libev-dev gnutls-bin -y
+        apt-get install ocserv vim net-tools pkg-config build-essential libgnutls28-dev libwrap0-dev liblz4-dev libseccomp-dev libreadline-dev libnl-nf-3-dev libev-dev gnutls-bin -y
     fi
 }
 Install_ocserv(){
@@ -196,6 +196,7 @@ Start_ocserv(){
     sleep 2s
     check_pid
     [[ ! -z ${PID} ]] && View_Config
+
 }
 Stop_ocserv(){
     check_installed_status
