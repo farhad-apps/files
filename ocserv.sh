@@ -69,8 +69,9 @@ Get_ip(){
 }
 Download_ocserv(){
     mkdir "ocserv" && cd "ocserv"
-    git clone https://gitlab.com/openconnect/ocserv.git
-    cd ocserv
+    wget "ftp://ftp.infradead.org/pub/ocserv/ocserv-${ocserv_ver}.tar.xz"
+    [[ ! -s "ocserv-${ocserv_ver}.tar.xz" ]] && echo -e "${Error} ocserv source download failed!" && rm -rf "ocserv/" && rm -rf "ocserv-${ocserv_ver}.tar.xz" && exit 1
+    tar -xJf ocserv-${ocserv_ver}.tar.xz && cd "ocserv-${ocserv_ver}"
     ./configure
     make
     make install
