@@ -42,7 +42,7 @@ install_packages() {
     done
 
     # install packages
-    local install_packages=("build-essential" "libpam0g-dev" "libcurl4-openssl-dev" "cmake" "net-tools" "curl" "nginx" "nodejs" "supervisor")
+    local install_packages=("build-essential" "libpam0g-dev" "libcurl4-openssl-dev" "cmake" "net-tools" "curl" "nginx" "nodejs" "supervisor" "psmisc")
 
     for ipackage in "${install_packages[@]}"; do
         sudo apt-get install -y "$ipackage"
