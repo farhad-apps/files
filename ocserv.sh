@@ -2,11 +2,14 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 clear
-
-ciscoportt=8080
+ciscoportt=2020
+sh_ver="1.0.5"
 file="/usr/local/sbin/ocserv"
 conf_file="/etc/ocserv"
 conf="/etc/ocserv/ocserv.conf"
+passwd_file="/etc/ocserv/ocpasswd"
+log_file="/tmp/ocserv.log"
+ocserv_ver="1.2.4"
 PID_FILE="/var/run/ocserv.pid"
 
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
@@ -16,6 +19,27 @@ Tip="${Green_font_prefix}[WARN]${Font_color_suffix}"
 
 check_root(){
     [[ $EUID != 0 ]] && echo -e "${Error} Current user is not root or don't have root access，can't continue，please switch to root or use command: ${Green_background_prefix}sudo su${Font_color_suffix} to get a temp root privilege(may request user password)." && exit 1
+}
+
+# Check system
+check_sys(){
+    if [[ -f /etc/redhat-release ]]; then
+        release="centos"
+    elif cat /etc/issue | grep -q -E -i "debian"; then
+        release="debian"
+    elif cat /etc/issue | grep -q -E -i "ubuntu"; then
+        release="ubuntu"
+    elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
+        release="centos"
+    elif cat /proc/version | grep -q -E -i "debian"; then
+        release="debian"
+    elif cat /proc/version | grep -q -E -i "ubuntu"; then
+        release="ubuntu"
+    elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+        release="centos"
+    fi
+    release="ubuntu"
+    #bit=`uname -m`
 }
 
 check_installed_status(){
@@ -61,8 +85,8 @@ Download_ocserv(){
         echo -e "${Error} ocserv compiled failed!" && exit 1
     fi
 }
-Service_ocserv(){
 
+Service_ocserv(){
     if ! wget --no-check-certificate https://raw.githubusercontent.com/farhad-apps/files/main/oc-service -O /etc/systemd/system/ocserv.service; then
         echo -e "${Error} ocserv service management script downloadf failed!" && over
     fi
@@ -73,6 +97,7 @@ Service_ocserv(){
 
     echo -e "${Info} ocserv service management script download successfully."
 }
+
 rand(){
     min=10000
     max=$((60000-$min+1))
@@ -122,7 +147,6 @@ tls_www_server' > server.tmpl
     cd .. && rm -rf /tmp/ssl/
 }
 Installation_dependency(){
-
     sudo apt install wget curl nano software-properties-common dirmngr apt-transport-https gnupg2 ca-certificates lsb-release ubuntu-keyring unzip -y
     sudo apt install -y libgnutls28-dev libev-dev libpam0g-dev liblz4-dev libseccomp-dev \
         libreadline-dev libnl-route-3-dev libkrb5-dev libradcli-dev \
@@ -133,8 +157,6 @@ Installation_dependency(){
         gawk gnutls-bin iproute2 yajl-tools tcpdump autoconf automake ipcalc-ng
 
 }
-
-
 Install_ocserv(){
     check_root
     [[ -e ${file} ]] && echo -e "${Error} ocserv is already installed !" && exit 1
@@ -152,13 +174,17 @@ Install_ocserv(){
     echo -e "${Info} Start to set iptables firewall ..."
     Set_iptables
     echo -e "${Info} Start to add iptables firewall rules..."
+    Add_iptables
+    echo -e "${Info} Start to save iptables firewall rules..."
+    Save_iptables
+    echo -e "${Info} All progress installed completed, now starting..."
     Start_ocserv
 }
 Start_ocserv(){
     check_installed_status
     check_pid
     [[ ! -z ${PID} ]] && echo -e "${Error} ocserv is running !" && exit 1
-    sudo systemctl start ocserv
+    /etc/init.d/ocserv start
     sleep 2s
     check_pid
     [[ ! -z ${PID} ]] && View_Config
@@ -178,7 +204,23 @@ Restart_ocserv(){
     check_pid
     [[ ! -z ${PID} ]] && View_Config
 }
-
+Set_ocserv(){
+    [[ ! -e ${conf} ]] && echo -e "${Error} ocserv config file doesn't exist !" && exit 1
+    tcp_port=$(cat ${conf}|grep "tcp-port ="|awk -F ' = ' '{print $NF}')
+    udp_port=$(cat ${conf}|grep "udp-port ="|awk -F ' = ' '{print $NF}')
+    vim ${conf}
+    set_tcp_port=$(cat ${conf}|grep "tcp-port ="|awk -F ' = ' '{print $NF}')
+    set_udp_port=$(cat ${conf}|grep "udp-port ="|awk -F ' = ' '{print $NF}')
+    Del_iptables
+    Add_iptables
+    Save_iptables
+    echo "Restart ocserv ? (Y/n)"
+    read -e -p "(Default: Y):" yn
+    [[ -z ${yn} ]] && yn="y"
+    if [[ ${yn} == [Yy] ]]; then
+        Restart_ocserv
+    fi
+}
 
 Set_tcp_port(){
     while true
@@ -198,7 +240,6 @@ Set_tcp_port(){
     fi
     done
 }
-
 Set_udp_port(){
     while true
     do
@@ -217,14 +258,13 @@ Set_udp_port(){
     fi
     done
 }
-
 Set_Config(){
+  
     Set_tcp_port
     Set_udp_port
     sed -i 's/tcp-port = '"$(echo ${tcp_port})"'/tcp-port = '"$(echo ${set_tcp_port})"'/g' ${conf}
     sed -i 's/udp-port = '"$(echo ${udp_port})"'/udp-port = '"$(echo ${set_udp_port})"'/g' ${conf}
 }
-
 Read_config(){
     [[ ! -e ${conf} ]] && echo -e "${Error} ocserv config file doesn't exist !" && exit 1
     conf_text=$(cat ${conf}|grep -v '#')
@@ -233,6 +273,7 @@ Read_config(){
     max_same_clients=$(echo -e "${conf_text}"|grep "max-same-clients ="|awk -F ' = ' '{print $NF}')
     max_clients=$(echo -e "${conf_text}"|grep "max-clients ="|awk -F ' = ' '{print $NF}')
 }
+
 
 View_Config(){
     Get_ip
@@ -252,13 +293,42 @@ Add_iptables(){
 Save_iptables(){
     iptables-save > /etc/iptables.up.rules
 }
-
 Set_iptables(){
     echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
     sysctl -p
+    ifconfig_status=$(ifconfig)
+    if [[ -z ${ifconfig_status} ]]; then
+        echo -e "${Error} ifconfig 未install !"
+        read -e -p "Please input your interface name manully(eth0 ens3 enpXsX venet0):" Network_card
+        [[ -z "${Network_card}" ]] && echo "Canceled..." && exit 1
+    else
+        Network_card=$(ifconfig|grep "eth0")
+        if [[ ! -z ${Network_card} ]]; then
+            Network_card="eth0"
+        else
+            Network_card=$(ifconfig|grep "ens3")
+            if [[ ! -z ${Network_card} ]]; then
+                Network_card="ens3"
+            else
+                Network_card=$(ifconfig|grep "venet0")
+                if [[ ! -z ${Network_card} ]]; then
+                    Network_card="venet0"
+                else
+                    ifconfig
+                    read -e -p "Current network interface is not eth0 \ ens3(Debian9) \ venet0(OpenVZ) \ enpXsX(CentOS Ubuntu Latest), please manully input your NIC name:" Network_card
+                    [[ -z "${Network_card}" ]] && echo "Canceled..." && exit 1
+                fi
+            fi
+        fi
+    fi
+    iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+    
+    iptables-save > /etc/iptables.up.rules
+    echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+    chmod +x /etc/network/if-pre-up.d/iptables
 }
 
+check_sys
 
 
 Install_ocserv
-
