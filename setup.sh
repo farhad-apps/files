@@ -273,7 +273,7 @@ ovpn_installer(){
             sed -i "s|{api_url}|$api_url|g" "$file_path"
             sed -i "s|{api_token}|$api_token|g" "$file_path"
             chmod +x $file_path
-            /var/rocket-ssh/ovpn-setup.sh &
+            bash $file_path
         fi
  
     fi
