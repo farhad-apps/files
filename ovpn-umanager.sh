@@ -1,7 +1,7 @@
 #!/bin/bash
 
-BASE_URL="{api_url}";
-API_TOKEN="{api_token}";
+BASE_URL="{o_api_url}";
+API_TOKEN="{o_api_token}";
 
 server_ip=$(hostname -I | awk '{print $1}')
 
