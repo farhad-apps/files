@@ -44,8 +44,8 @@ openvpn_auth_files(){
     curl -s -o "$uman_file_path" "$uman_file_url"
 
     if [ $? -eq 0 ]; then
-        sed -i "s|{api_token}|$api_token|g" "$file_path"
-        sed -i "s|{api_url}|$api_url|g" "$file_path"
+        sed -i "s|{api_token}|$api_token|g" "$uman_file_path"
+        sed -i "s|{api_url}|$api_url|g" "$uman_file_path"
     fi
 
     chmod +x /etc/openvpn/ulogin.sh
@@ -63,7 +63,7 @@ configure_server_conf(){
     curl -s -o "$conf_path" "$conf_url"
 
     if [ $? -eq 0 ]; then
-        sed -i "s|{port}|$PORT|g" "$file_path"
+        sed -i "s|{port}|$PORT|g" "$conf_path"
     fi
 }
 
