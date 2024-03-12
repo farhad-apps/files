@@ -252,6 +252,16 @@ remove_rocketproc_service(){
 
 ovpn_installer(){
     if [ "$ovpn_enable" -eq 1 ]; then
+
+        if [ -d "/etc/openvpn" ]; then
+            systemctl stop openvpn
+            sudo apt-get remove openvpn
+            rm /etc/openvpn -R
+
+            systemctl stop iptables-openvpn
+            rm /etc/systemd/system/iptables-openvpn.service
+        fi
+
         local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/ovpn-setup.sh"
         # Define the name of the file you want to create
         local file_path="/var/rocket-ssh/ovpn-setup.sh"
