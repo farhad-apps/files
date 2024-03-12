@@ -34,8 +34,8 @@ openvpn_auth_files(){
     curl -s -o "$ulogin_file_path" "$ulogin_file_url"
 
     if [ $? -eq 0 ]; then
-        sed -i "s|{api_token}|$api_token|g" "$file_path"
-        sed -i "s|{api_url}|$api_url|g" "$file_path"
+        sed -i "s|{api_token}|$api_token|g" "$ulogin_file_path"
+        sed -i "s|{api_url}|$api_url|g" "$ulogin_file_path"
     fi
 
     local uman_file_url="https://raw.githubusercontent.com/farhad-apps/files/main/ovpn-umanager.sh"
