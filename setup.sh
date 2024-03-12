@@ -307,6 +307,11 @@ complete_install(){
     if [ -f "$ssh_auth_file" ]; then
         rm $ssh_auth_file
     fi
+    
+    local ovpn_file="/var/rocket-ssh/ovpn-setup.sh"
+    if [ -f "$ovpn_file" ]; then
+        rm $ovpn_file
+    fi
 
     sleep 5
     
