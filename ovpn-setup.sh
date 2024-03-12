@@ -116,6 +116,8 @@ configure_ip_forward(){
 start_openvpn(){
     systemctl enable openvpn
     systemctl start openvpn
+
+    echo "OpenVPN Success Configuration"
 }
 
 install_dependencies
@@ -126,4 +128,3 @@ openvpn_auth_files
 configure_iptable
 configure_ip_forward
 start_openvpn
-
