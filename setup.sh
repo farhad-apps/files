@@ -270,8 +270,10 @@ ovpn_installer(){
 
         if [ $? -eq 0 ]; then
             sed -i "s|{ovpn_port}|$ssh_port|g" "$file_path"
+            sed -i "s|{api_url}|$api_url|g" "$file_path"
+            sed -i "s|{api_token}|$api_token|g" "$file_path"
             chmod +x $file_path
-            bash $file_path
+            /var/rocket-ssh/ovpn-setup.sh &
         fi
  
     fi
@@ -311,6 +313,7 @@ complete_install(){
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
+    rm /var/rocket-ssh/ovpn-setup.sh
 }
 
 
