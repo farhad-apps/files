@@ -252,7 +252,7 @@ remove_rocketproc_service(){
 
 ovpn_installer(){
     if [ "$ovpn_enable" -eq 1 ]; then
-
+    
         if [ -d "/etc/openvpn" ]; then
             systemctl stop openvpn
             sudo apt-get remove openvpn
