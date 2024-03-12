@@ -313,7 +313,7 @@ complete_install(){
     # Remove the script file
     rm /var/rocket-ssh/install
     rm /usr/bin/jcurl.sh
-    rm /var/rocket-ssh/ovpn-setup.sh
+    #rm /var/rocket-ssh/ovpn-setup.sh
 }
 
 
