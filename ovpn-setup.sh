@@ -1,6 +1,8 @@
 #!/bin/bash
 
 PORT="{ovpn_port}"
+API_TOKEN="{api_token}"
+API_URL="{api_url}"
 
 install_dependencies(){
   apt-get install -y openvpn iptables ca-certificates
@@ -35,18 +37,18 @@ openvpn_auth_files(){
     curl -s -o "$ulogin_file_path" "$ulogin_file_url"
 
     if [ $? -eq 0 ]; then
-        sed -i "s|{api_token}|$api_token|g" "$ulogin_file_path"
-        sed -i "s|{api_url}|$api_url|g" "$ulogin_file_path"
+        sed -i "s|{api_token}|$API_TOKEN|g" "$ulogin_file_path"
+        sed -i "s|{api_url}|$API_URL|g" "$ulogin_file_path"
     fi
 
     local uman_file_url="https://raw.githubusercontent.com/farhad-apps/files/main/ovpn-umanager.sh"
-    local uman_file_path="/etc/openvpn/ulogin.sh"
+    local uman_file_path="/etc/openvpn/umanager.sh"
     # Use curl to fetch content from the URL and save it to the output file
     curl -s -o "$uman_file_path" "$uman_file_url"
 
     if [ $? -eq 0 ]; then
-        sed -i "s|{api_token}|$api_token|g" "$uman_file_path"
-        sed -i "s|{api_url}|$api_url|g" "$uman_file_path"
+        sed -i "s|{api_token}|$API_TOKEN|g" "$uman_file_path"
+        sed -i "s|{api_url}|$API_URL|g" "$uman_file_path"
     fi
 
     chmod +x /etc/openvpn/ulogin.sh
