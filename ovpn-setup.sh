@@ -16,9 +16,9 @@ install_easyrsa(){
 build_certificates(){
     cd /etc/openvpn/easy-rsa
     ./easyrsa init-pki
-    ./easyrsa build-ca nopass
+    yes | ./easyrsa build-ca nopass
     ./easyrsa gen-dh
-    ./easyrsa build-server-full server nopass
+    yes | ./easyrsa build-server-full server nopass
     openvpn --genkey --secret pki/ta.key
     cp /etc/openvpn/easy-rsa/pki/{ca.crt,ta.key,issued/server.crt,private/server.key,dh.pem} "/etc/openvpn/"
     cd /etc/openvpn
