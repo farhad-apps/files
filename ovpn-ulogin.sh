@@ -8,23 +8,13 @@ server_ip=$(hostname -I | awk '{print $1}')
 DATA=$(cat <<EOF
 {
 "username": "$username",
-"user_ip": "$trusted_ip",
-"pid": "$trusted_port",
-"server_ip": "$server_ip",
-"bytes_received": "$bytes_received",
-"bytes_sent": "$bytes_sent",
-"type": "$script_type"
+"password": "$password"
 }
 EOF
-    )
-    
-encodedData=$(echo -n "$DATA" | base64 -w 0)
+  )
 
-if [ "$script_type" == "client-connect" ]; then
-    apiUrl="${BASE_URL}/ovpn/uconnect?token=${API_TOKEN}"
-else
-    apiUrl="${BASE_URL}/ovpn/udisconnect?token=${API_TOKEN}"
-fi
+encodedData=$(echo -n "$DATA" | base64 -w 0)
+apiUrl="${BASE_URL}/ovpn/ulogin?token=${API_TOKEN}"
 
 jsonData="{\"data\": \"$encodedData\"}"
 
