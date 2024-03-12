@@ -4,6 +4,8 @@ ssh_port=22
 udp_port=7300
 api_token=""
 api_url=""
+ovpn_enable=0
+ovpn_port=443
 
 echo "start" > /var/rocket-ssh/status.txt
 
@@ -17,6 +19,8 @@ read_config(){
         udp_port=$(grep '^udp_port=' "$config_file" | awk -F= '{print $2}')
         api_token=$(grep '^api_token=' "$config_file" | awk -F= '{print $2}')
         api_url=$(grep '^api_url=' "$config_file" | awk -F= '{print $2}')
+        ovpn_enable=$(grep '^ovpn_enable=' "$config_file" | awk -F= '{print $2}')
+        ovpn_port=$(grep '^ovpn_port=' "$config_file" | awk -F= '{print $2}')
     fi
 }
 
@@ -97,7 +101,6 @@ configure_supervisor(){
 
     # Append content to the file    
     echo -e "$content" | sudo tee -a "$s_file_path" > /dev/null
-
 
     local rocket_file_path="/etc/supervisor/conf.d/rocket_app.conf"
 
@@ -247,6 +250,23 @@ remove_rocketproc_service(){
     fi
 }
 
+ovpn_installer(){
+    if [ "$ovpn_enable" -eq 1 ]; then
+        local file_url="https://raw.githubusercontent.com/farhad-apps/files/main/ovpn-setup.sh"
+        # Define the name of the file you want to create
+        local file_path="/var/rocket-ssh/ovpn-setup.sh"
+        
+        curl -s -o "$file_path" "$file_url"
+
+        if [ $? -eq 0 ]; then
+            sed -i "s|{ovpn_port}|$ssh_port|g" "$file_path"
+            chmod +x $file_path
+            bash $file_path
+        fi
+ 
+    fi
+}
+
 complete_install(){
     echo "complete" > /var/rocket-ssh/status.txt
 
@@ -297,4 +317,5 @@ configure_nginx
 remove_rocketproc_service
 configure_rocket_app
 configure_supervisor
+ovpn_installer
 complete_install
