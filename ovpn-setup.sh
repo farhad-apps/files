@@ -20,7 +20,7 @@ build_certificates(){
     cd /etc/openvpn/easy-rsa
     rm /etc/openvpn/easy-rsa/pki -R
     ./easyrsa init-pki
-    echo | ./easyrsa build-ca nopass
+    echo "" | ./easyrsa build-ca nopass
     ./easyrsa gen-dh
     echo yes | ./easyrsa build-server-full server nopass
     openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
