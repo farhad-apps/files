@@ -1,8 +1,6 @@
 const http = require("http");
 const { exec } = require("child_process");
 const os = require("os");
-const fs = require("fs");
-const path = require("path");
 const process = require("process");
 const { Buffer } = require("buffer");
 
@@ -180,13 +178,19 @@ const apiActions = {
     await helpers.createUser(username, password);
   },
   killUserByPid: async (pdata) => {
-    const { pid } = pdata;
-    const command = `pstree -p ${pid} | awk -F\"[()]\" '/sshd/ {print $4}'`;
-    const { stdout } = await runCmd(command);
-    if (stdout) {
-      const procId = stdout;
-      await runCmd(`sudo kill -9 ${procId}`);
-      await runCmd(`sudo timeout 10 kill -9 ${procId}`);
+    const { pid, user_ip, protocol, port } = pdata;
+    if (protocol === 'ssh') {
+      const command = `pstree -p ${pid} | awk -F\"[()]\" '/sshd/ {print $4}'`;
+      const { stdout } = await runCmd(command);
+      if (stdout) {
+        const procId = stdout;
+        await runCmd(`sudo kill -9 ${procId}`);
+        await runCmd(`sudo timeout 10 kill -9 ${procId}`);
+      }
+    } else if (protocol === "openvpn") {
+      const value = `${user_ip}:${port}`
+      const command = `echo "kill ${value}" | telnet localhost 7505`;
+      await runCmd(command);
     }
   },
 };
@@ -235,7 +239,8 @@ const sendToApi = (endpoint, pdata = false) => {
 const LoopMethods = {
   doStart: async () => {
     LoopMethods.getSettings();
-    LoopMethods.sendTraffic();
+    LoopMethods.sendSshTraffic();
+    LoopMethods.sendOvpnTraffic();
     LoopMethods.resetSshSerivces();
     LoopMethods.removeAuthLog();
     LoopMethods.sendUsersAuthPids();
@@ -254,7 +259,7 @@ const LoopMethods = {
         setTimeout(LoopMethods.getSettings, 10 * 60 * 1000);
       });
   },
-  sendTraffic: async () => {
+  sendSshTraffic: async () => {
     if (settings.calc_traffic) {
       const command = "sudo nethogs -j -v3 -c6";
       runCmd(command)
@@ -274,13 +279,35 @@ const LoopMethods = {
               runCmd("sudo killall -9 nethogs");
             }
           });
-          setTimeout(LoopMethods.sendTraffic, 5000);
+          setTimeout(LoopMethods.sendSshTraffic, 5000);
         })
         .catch((err) => {
-          setTimeout(LoopMethods.sendTraffic, 5000);
+          setTimeout(LoopMethods.sendSshTraffic, 5000);
         });
     } else {
-      setTimeout(LoopMethods.sendTraffic, 5000);
+      setTimeout(LoopMethods.sendSshTraffic, 5000);
+    }
+  },
+  sendOvpnTraffic: async () => {
+    if (settings.calc_traffic) {
+      const command = "cat /etc/openvpn/status.log";
+      runCmd(command).then(res => {
+        const { stdout } = res;
+        if (stdout) {
+          const base64Encoded = Buffer.from(stdout).toString("base64");
+          const pdata = JSON.stringify({ data: base64Encoded });
+          sendToApi("ovpn/utraffic", pdata);
+
+          // const command = "sudo systemctl restart openvpn.service";
+          // runCmd(command)
+        }
+
+        setTimeout(LoopMethods.sendOvpnTraffic, 10000);
+      }).catch((err) => {
+        setTimeout(LoopMethods.sendOvpnTraffic, 10000);
+      });
+    } else {
+      setTimeout(LoopMethods.sendOvpnTraffic, 10000);
     }
   },
   resetSshSerivces: async () => {
@@ -290,6 +317,7 @@ const LoopMethods = {
   },
   removeAuthLog: async () => {
     runCmd("sudo truncate -s 0 /var/log/auth.log");
+    runCmd("sudo truncate -s 0 /var/log/openvpn.log");
     setTimeout(LoopMethods.removeAuthLog, 3600 * 1000);
   },
   sendUsersAuthPids: async () => {
@@ -344,6 +372,13 @@ const hanldeApiAction = async (pdata) => {
           await apiActions.killUser(user);
         }
       }
+    } else if (action === "ovpn-client-conf") {
+      const command = "cat /etc/openvpn/client.conf";
+      const { stdout } = await runCmd(command)
+      return {
+        conf: stdout
+      }
+
     }
   } catch (err) {
     console.log("error hanldeApiAction", err);
@@ -389,12 +424,14 @@ const server = http.createServer(async (req, res) => {
           result = { status: "success" };
         }
         return res.end(JSON.stringify(result));
-      } catch (err) {}
+      } catch (err) { }
     }
 
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end("");
   }
+
+
 
   res.writeHead(404, { "Content-Type": "text/plain" });
   return res.end("Not Found");
