@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PORT="{ovpn_port}"
+DOMAIN="{ovpn_domain}"
 API_TOKEN="{api_token}"
 API_URL="{api_url}"
 
@@ -66,7 +67,29 @@ configure_server_conf(){
     curl -s -o "$conf_path" "$conf_url"
 
     if [ $? -eq 0 ]; then
+
         sed -i "s|{port}|$PORT|g" "$conf_path"
+    fi
+}
+
+configure_client_conf(){
+    
+    local conf_url="https://raw.githubusercontent.com/farhad-apps/files/main/ovpn-client.conf"
+    local conf_path="/etc/openvpn/client.conf"
+
+    # Use curl to fetch content from the URL and save it to the output file
+    curl -s -o "$conf_path" "$conf_url"
+
+    if [ $? -eq 0 ]; then
+
+        CA_CONTENT=$(<"/etc/openvpn/ca.crt") 
+        TLS_CONTENT=$(<"/etc/openvpn/ta.key")
+
+        sed -i "s|{o_domain}|$DOMAIN|g" "$conf_path"
+        sed -i "s|{o_port}|$PORT|g" "$conf_path"
+        sed -i "s|{ca_content}|$CA_CONTENT|g" "$conf_path"
+        sed -i "s|{tls_content}|$TLS_CONTENT|g" "$conf_path"
+    
     fi
 }
 
@@ -127,6 +150,7 @@ install_dependencies
 install_easyrsa
 build_certificates
 configure_server_conf
+configure_client_conf
 openvpn_auth_files
 configure_iptable
 configure_ip_forward
