@@ -82,13 +82,24 @@ configure_client_conf(){
 
     if [ $? -eq 0 ]; then
 
-        CA_CONTENT=$(<"/etc/openvpn/ca.crt") 
-        TLS_CONTENT=$(<"/etc/openvpn/ta.key")
-
         sed -i "s|{o_domain}|$DOMAIN|g" "$conf_path"
         sed -i "s|{o_port}|$PORT|g" "$conf_path"
-        sed -i "s|{ca_content}|$CA_CONTENT|g" "$conf_path"
-        sed -i "s|{tls_content}|$TLS_CONTENT|g" "$conf_path"
+
+        ca_file="/etc/openvpn/ca.crt"
+        tls_file="/etc/openvpn/ta.key"
+
+        ca_content=$(<"$ca_file")
+        tls_content=$(<"$tls_file")
+
+cat <<EOF >> "$conf_path"
+
+<ca>
+$ca_content
+</ca>
+<tls-auth>
+$tls_content
+</tls-auth>
+EOF
     
     fi
 }
