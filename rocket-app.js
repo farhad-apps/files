@@ -390,48 +390,58 @@ const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Methods", "POST");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  const urlPath = req.url;
-  const sendMethod = req.method;
-  const authToken = req.headers["x-auth"];
+  var urlPath = req.url;
+  var sendMethod = req.method;
 
-  if (authToken !== "p5c23cb5nopit1ak3g6nbfqv84hewl") {
-    res.writeHead(401, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Unauthorized" }));
-    return;
-  }
+  if (sendMethod === "POST") {
+    const authToken = req.headers["x-auth"];
+    if (urlPath === "/") {
 
-  if (sendMethod === "POST" && urlPath === "/") {
-    var pdata = "";
-    const readBody = () =>
-      new Promise((resolve) => {
-        req.on("data", (chunk) => {
-          pdata += chunk.toString();
+      if (authToken !== "p5c23cb5nopit1ak3g6nbfqv84hewl") {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Unauthorized" }));
+        return;
+      }
+
+
+      var pdata = "";
+      const readBody = () =>
+        new Promise((resolve) => {
+          req.on("data", (chunk) => {
+            pdata += chunk.toString();
+          });
+
+          req.on("end", () => {
+            resolve();
+          });
         });
+      await readBody();
 
-        req.on("end", () => {
-          resolve();
-        });
-      });
-    await readBody();
+      //handle actions
+      if (pdata) {
+        pdata = JSON.parse(pdata);
+        try {
+          var result = await hanldeApiAction(pdata);
+          res.writeHead(200, { "Content-Type": "application/json" });
+          if (!result) {
+            result = { status: "success" };
+          }
+          return res.end(JSON.stringify(result));
+        } catch (err) { }
+      }
 
-    //handle actions
-    if (pdata) {
-      pdata = JSON.parse(pdata);
-      try {
-        var result = await hanldeApiAction(pdata);
-        res.writeHead(200, { "Content-Type": "application/json" });
-        if (!result) {
-          result = { status: "success" };
-        }
-        return res.end(JSON.stringify(result));
-      } catch (err) { }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end("");
     }
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end("");
+  } else {
+    urlPath = urlPath.replace("//", '');
+    if (urlPath === "ovpn-cconfig") {
+      const command = "cat /etc/openvpn/client.conf";
+      const { stdout } = await runCmd(command)
+      res.writeHead(200, { "Content-Type": "text/plain", 'Content-Disposition': 'attachment; filename=rocket.ovpn' });
+      return res.end(stdout);
+    }
   }
-
-
 
   res.writeHead(404, { "Content-Type": "text/plain" });
   return res.end("Not Found");
