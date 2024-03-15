@@ -6,6 +6,7 @@ api_token=""
 api_url=""
 ovpn_enable=0
 ovpn_port=443
+ovpn_domain=""
 
 echo "start" > /var/rocket-ssh/status.txt
 
@@ -21,6 +22,7 @@ read_config(){
         api_url=$(grep '^api_url=' "$config_file" | awk -F= '{print $2}')
         ovpn_enable=$(grep '^ovpn_enable=' "$config_file" | awk -F= '{print $2}')
         ovpn_port=$(grep '^ovpn_port=' "$config_file" | awk -F= '{print $2}')
+        ovpn_domain=$(grep '^ovpn_domain=' "$config_file" | awk -F= '{print $2}')
     fi
 }
 
@@ -270,6 +272,7 @@ ovpn_installer(){
 
         if [ $? -eq 0 ]; then
             sed -i "s|{ovpn_port}|$ssh_port|g" "$file_path"
+            sed -i "s|{ovpn_domain}|$ovpn_domain|g" "$file_path"
             sed -i "s|{api_url}|$api_url|g" "$file_path"
             sed -i "s|{api_token}|$api_token|g" "$file_path"
             chmod +x $file_path
