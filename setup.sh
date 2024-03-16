@@ -314,6 +314,7 @@ complete_install(){
     
     local ovpn_file="/var/rocket-ssh/ovpn-setup.sh"
     if [ -f "$ovpn_file" ]; then
+        echo "S"
         #rm $ovpn_file
     fi
 
