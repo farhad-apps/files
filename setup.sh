@@ -6,7 +6,7 @@ api_token=""
 api_url=""
 ovpn_enable=0
 ovpn_port=443
-ovpn_domain=""
+ovpn_domain="" 
 
 echo "start" > /var/rocket-ssh/status.txt
 
