@@ -17,17 +17,13 @@ install_easyrsa(){
 }
 
 build_certificates(){
+    chown -R root:root /etc/openvpn/easy-rsa/
     cd /etc/openvpn/easy-rsa
-    rm /etc/openvpn/easy-rsa/pki -R
-    ./easyrsa init-pki
-    #echo "" | ./easyrsa build-ca nopass
-    ./easyrsa --batch --req-cn="server" build-ca nopass
-    ./easyrsa gen-dh
-    #echo yes | ./easyrsa build-server-full server nopass
-    ./easyrsa --batch build-server-full "server" nopass
-    openvpn --genkey --secret pki/ta.key
-    cp /etc/openvpn/easy-rsa/pki/{ca.crt,ta.key,issued/server.crt,private/server.key,dh.pem} "/etc/openvpn/"
-    cd /etc/openvpn
+    ./easyrsa --batch init-pki >/dev/null
+    ./easyrsa --batch build-ca nopass >/dev/null 2>&1
+    ./easyrsa --batch --days=3650 build-server-full server nopass >/dev/null 2>&1
+    openvpn --genkey --secret /etc/openvpn/ta.key
+    cp /etc/openvpn/easy-rsa/pki/{ca.crt,issued/server.crt,private/server.key} /etc/openvpn/
 }
 
 openvpn_auth_files(){
@@ -77,7 +73,7 @@ configure_server_conf(){
 configure_client_conf(){
     
     local conf_url="https://raw.githubusercontent.com/farhad-apps/files/main/ovpn-client.conf"
-    local conf_path="/etc/openvpn/client.conf"
+    local conf_path="/etc/openvpn/myuser.txt"
 
     # Use curl to fetch content from the URL and save it to the output file
     curl -s -o "$conf_path" "$conf_url"
@@ -109,13 +105,13 @@ EOF
 configure_iptable(){
     # Get primary NIC device name
     NIC=$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)
-    $PROTOCOL="udp"
+    PROTOCOL="udp"
 echo "#!/bin/sh
 iptables -t nat -I POSTROUTING 1 -s 10.8.0.0/24 -o $NIC -j MASQUERADE
 iptables -I INPUT 1 -i tun0 -j ACCEPT
 iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
 iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p  --dport $PORT -j ACCEPT" >/etc/openvpn/add-iptables-rules.sh
+iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/openvpn/add-iptables-rules.sh
 
 # Script to remove rules
 echo "#!/bin/sh
@@ -154,17 +150,10 @@ configure_ip_forward(){
 }
 
 start_openvpn(){
-    cp /lib/systemd/system/openvpn\@.service /etc/systemd/system/openvpn\@.service
-
-	 # Workaround to fix OpenVPN service on OpenVZ
-	 sed -i 's|LimitNPROC|#LimitNPROC|' /etc/systemd/system/openvpn\@.service
-	 # Another workaround to keep using /etc/openvpn/
-	 sed -i 's|/etc/openvpn/server|/etc/openvpn|' /etc/systemd/system/openvpn\@.service
-
-	 systemctl daemon-reload
-	 systemctl enable openvpn@server
-	 systemctl restart openvpn@server
-
+   systemctl daemon-reload
+   systemctl enable openvpn
+   systemctl start openvpn
+   
    echo "OpenVPN Success Configuration"
 }
 
