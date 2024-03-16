@@ -389,8 +389,6 @@ const server = http.createServer(async (req, res) => {
   var urlPath = req.url;
   var sendMethod = req.method;
 
-  console.log("urlPath", urlPath);
-
   if (sendMethod === "POST") {
     const authToken = req.headers["x-auth"];
 
