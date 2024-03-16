@@ -20,7 +20,7 @@ read_config(){
         udp_port=$(grep '^udp_port=' "$config_file" | awk -F= '{print $2}')
         api_token=$(grep '^api_token=' "$config_file" | awk -F= '{print $2}')
         api_url=$(grep '^api_url=' "$config_file" | awk -F= '{print $2}')
-        ovpn_enable=$(grep '^ovpn_enable=' "$config_file" | awk -F= '{print $2}')
+        #ovpn_enable=$(grep '^ovpn_enable=' "$config_file" | awk -F= '{print $2}')
         ovpn_port=$(grep '^ovpn_port=' "$config_file" | awk -F= '{print $2}')
         ovpn_domain=$(grep '^ovpn_domain=' "$config_file" | awk -F= '{print $2}')
     fi
