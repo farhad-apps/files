@@ -271,7 +271,7 @@ ovpn_installer(){
         curl -s -o "$file_path" "$file_url"
 
         if [ $? -eq 0 ]; then
-            sed -i "s|{ovpn_port}|$ssh_port|g" "$file_path"
+            sed -i "s|{ovpn_port}|$ovpn_port|g" "$file_path"
             sed -i "s|{ovpn_domain}|$ovpn_domain|g" "$file_path"
             sed -i "s|{api_url}|$api_url|g" "$file_path"
             sed -i "s|{api_token}|$api_token|g" "$file_path"
