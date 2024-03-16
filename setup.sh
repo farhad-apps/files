@@ -23,6 +23,7 @@ read_config(){
         ovpn_enable=$(grep '^ovpn_enable=' "$config_file" | awk -F= '{print $2}')
         ovpn_port=$(grep '^ovpn_port=' "$config_file" | awk -F= '{print $2}')
         ovpn_domain=$(grep '^ovpn_domain=' "$config_file" | awk -F= '{print $2}')
+        echo "OVPN PORT1: $ovpn_port"
     fi
 }
 
@@ -313,7 +314,7 @@ complete_install(){
     
     local ovpn_file="/var/rocket-ssh/ovpn-setup.sh"
     if [ -f "$ovpn_file" ]; then
-        rm $ovpn_file
+        #rm $ovpn_file
     fi
 
     sleep 5
