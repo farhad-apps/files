@@ -178,7 +178,7 @@ const apiActions = {
     await helpers.createUser(username, password);
   },
   killUserByPid: async (pdata) => {
-    const { pid, user_ip, protocol, port } = pdata;
+    const { pid, user_ip, protocol } = pdata;
     if (protocol === 'ssh') {
       const command = `pstree -p ${pid} | awk -F\"[()]\" '/sshd/ {print $4}'`;
       const { stdout } = await runCmd(command);
@@ -188,7 +188,7 @@ const apiActions = {
         await runCmd(`sudo timeout 10 kill -9 ${procId}`);
       }
     } else if (protocol === "openvpn") {
-      const value = `${user_ip}:${port}`
+      const value = `${user_ip}:${pid}`
       const command = `echo "kill ${value}" | telnet localhost 7505`;
       await runCmd(command);
     }
@@ -297,11 +297,7 @@ const LoopMethods = {
           const base64Encoded = Buffer.from(stdout).toString("base64");
           const pdata = JSON.stringify({ data: base64Encoded });
           sendToApi("ovpn/utraffic", pdata);
-
-          // const command = "sudo systemctl restart openvpn.service";
-          // runCmd(command)
         }
-
         setTimeout(LoopMethods.sendOvpnTraffic, 10000);
       }).catch((err) => {
         setTimeout(LoopMethods.sendOvpnTraffic, 10000);
@@ -373,7 +369,7 @@ const hanldeApiAction = async (pdata) => {
         }
       }
     } else if (action === "ovpn-client-conf") {
-      const command = "cat /etc/openvpn/client.conf";
+      const command = "cat /etc/openvpn/myuser.txt";
       const { stdout } = await runCmd(command)
       return {
         conf: stdout
@@ -393,17 +389,18 @@ const server = http.createServer(async (req, res) => {
   var urlPath = req.url;
   var sendMethod = req.method;
 
+  console.log("urlPath", urlPath);
+
   if (sendMethod === "POST") {
     const authToken = req.headers["x-auth"];
+
+    if (authToken !== "p5c23cb5nopit1ak3g6nbfqv84hewl") {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
     if (urlPath === "/") {
-
-      if (authToken !== "p5c23cb5nopit1ak3g6nbfqv84hewl") {
-        res.writeHead(401, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Unauthorized" }));
-        return;
-      }
-
-
       var pdata = "";
       const readBody = () =>
         new Promise((resolve) => {
@@ -433,14 +430,6 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end("");
     }
-  } else {
-    urlPath = urlPath.replace("//", '');
-    if (urlPath === "ovpn-cconfig") {
-      const command = "cat /etc/openvpn/client.conf";
-      const { stdout } = await runCmd(command)
-      res.writeHead(200, { "Content-Type": "text/plain", 'Content-Disposition': 'attachment; filename=rocket.ovpn' });
-      return res.end(stdout);
-    }
   }
 
   res.writeHead(404, { "Content-Type": "text/plain" });
@@ -460,3 +449,4 @@ server.listen(3000, "localhost", () => {
 
   LoopMethods.doStart();
 });
+
