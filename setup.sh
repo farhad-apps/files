@@ -23,7 +23,8 @@ read_config(){
         ovpn_enable=$(grep '^ovpn_enable=' "$config_file" | awk -F= '{print $2}')
         ovpn_port=$(grep '^ovpn_port=' "$config_file" | awk -F= '{print $2}')
         ovpn_domain=$(grep '^ovpn_domain=' "$config_file" | awk -F= '{print $2}')
-        echo "OVPN PORT1: $ovpn_port"
+        
+        echo "OVPN PORT1: $ovpn_port" 
     fi
 }
 
