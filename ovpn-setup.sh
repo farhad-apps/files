@@ -6,11 +6,11 @@ API_TOKEN="{api_token}"
 API_URL="{api_url}"
 
 install_dependencies(){
-  apt-get install -y openvpn iptables ca-certificates
+  apt-get install -y openvpn iptables ca-certificates gnupg
 }
 
 install_easyrsa(){
-    wget -O ~/easy-rsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.7/EasyRSA-3.1.7.tgz
+    wget -O ~/easy-rsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.2/EasyRSA-3.1.2.tgz
     mkdir -p /etc/openvpn/easy-rsa
     tar xzf ~/easy-rsa.tgz --strip-components=1 --no-same-owner --directory /etc/openvpn/easy-rsa
     rm -f ~/easy-rsa.tgz
@@ -25,7 +25,7 @@ build_certificates(){
     ./easyrsa gen-dh
     #echo yes | ./easyrsa build-server-full server nopass
     ./easyrsa --batch build-server-full "server" nopass
-    openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
+    openvpn --genkey --secret pki/ta.key
     cp /etc/openvpn/easy-rsa/pki/{ca.crt,ta.key,issued/server.crt,private/server.key,dh.pem} "/etc/openvpn/"
     cd /etc/openvpn
 }
@@ -115,7 +115,7 @@ iptables -t nat -I POSTROUTING 1 -s 10.8.0.0/24 -o $NIC -j MASQUERADE
 iptables -I INPUT 1 -i tun0 -j ACCEPT
 iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
 iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/openvpn/add-iptables-rules.sh
+iptables -I INPUT 1 -i $NIC -p  --dport $PORT -j ACCEPT" >/etc/openvpn/add-iptables-rules.sh
 
 # Script to remove rules
 echo "#!/bin/sh
@@ -154,10 +154,18 @@ configure_ip_forward(){
 }
 
 start_openvpn(){
-    systemctl enable openvpn
-    systemctl start openvpn
+    cp /lib/systemd/system/openvpn\@.service /etc/systemd/system/openvpn\@.service
 
-    echo "OpenVPN Success Configuration"
+	 # Workaround to fix OpenVPN service on OpenVZ
+	 sed -i 's|LimitNPROC|#LimitNPROC|' /etc/systemd/system/openvpn\@.service
+	 # Another workaround to keep using /etc/openvpn/
+	 sed -i 's|/etc/openvpn/server|/etc/openvpn|' /etc/systemd/system/openvpn\@.service
+
+	 systemctl daemon-reload
+	 systemctl enable openvpn@server
+	 systemctl restart openvpn@server
+
+   echo "OpenVPN Success Configuration"
 }
 
 install_dependencies
