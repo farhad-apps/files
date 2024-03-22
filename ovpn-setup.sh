@@ -105,7 +105,7 @@ EOF
 configure_iptable(){
     # Get primary NIC device name
     NIC=$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)
-    PROTOCOL="udp"
+    PROTOCOL="tcp"
 echo "#!/bin/sh
 iptables -t nat -I POSTROUTING 1 -s 10.8.0.0/24 -o $NIC -j MASQUERADE
 iptables -I INPUT 1 -i tun0 -j ACCEPT
