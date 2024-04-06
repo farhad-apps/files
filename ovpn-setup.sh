@@ -22,8 +22,10 @@ build_certificates(){
     ./easyrsa --batch init-pki >/dev/null
     ./easyrsa --batch build-ca nopass >/dev/null 2>&1
     ./easyrsa --batch --days=3650 build-server-full server nopass >/dev/null 2>&1
-    openvpn --genkey --secret /etc/openvpn/ta.key
-    cp /etc/openvpn/easy-rsa/pki/{ca.crt,issued/server.crt,private/server.key} /etc/openvpn/
+    ./easyrsa --batch --days=3650 build-client-full client nopass
+    openvpn --genkey --secret /etc/openvpn/tc.key >/dev/null 2>&1
+    openssl dhparam -out /etc/openvp/dh.pem 2048 >/dev/null 2>&1
+    cp /etc/openvpn/easy-rsa/pki/{ca.crt,issued/server.crt,issued/client.crt,private/client.key,private/server.key} /etc/openvpn/
 }
 
 openvpn_auth_files(){
@@ -84,9 +86,13 @@ configure_client_conf(){
         sed -i "s|{o_port}|$PORT|g" "$conf_path"
 
         ca_file="/etc/openvpn/ca.crt"
-        tls_file="/etc/openvpn/ta.key"
+        tls_file="/etc/openvpn/tc.key"
+        claint_cert_file="/etc/openvpn/client.crt"
+        claint_key_file="/etc/openvpn/client.key"
 
         ca_content=$(<"$ca_file")
+        claint_cert_content=$(awk '/BEGIN/,/END CERTIFICATE/' "$claint_cert_file")
+        claint_key_content=$(<"$claint_key_file")
         tls_content=$(<"$tls_file")
 
 cat <<EOF >> "$conf_path"
@@ -94,9 +100,15 @@ cat <<EOF >> "$conf_path"
 <ca>
 $ca_content
 </ca>
-<tls-auth>
+<cert>
+$claint_cert_content
+</cert>
+<key>
+$claint_key_content
+</key>
+<tls-crypt>
 $tls_content
-</tls-auth>
+</tls-crypt>
 EOF
     
     fi
@@ -105,7 +117,7 @@ EOF
 configure_iptable(){
     # Get primary NIC device name
     NIC=$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)
-    PROTOCOL="tcp"
+    PROTOCOL="udp"
 echo "#!/bin/sh
 iptables -t nat -I POSTROUTING 1 -s 10.8.0.0/24 -o $NIC -j MASQUERADE
 iptables -I INPUT 1 -i tun0 -j ACCEPT
