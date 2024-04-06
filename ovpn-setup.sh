@@ -24,7 +24,7 @@ build_certificates(){
     ./easyrsa --batch --days=3650 build-server-full server nopass >/dev/null 2>&1
     ./easyrsa --batch --days=3650 build-client-full client nopass
     openvpn --genkey --secret /etc/openvpn/tc.key >/dev/null 2>&1
-    openssl dhparam -out /etc/openvp/dh.pem 2048 >/dev/null 2>&1
+    openssl dhparam -out /etc/openvpn/dh.pem 2048 >/dev/null 2>&1
     cp /etc/openvpn/easy-rsa/pki/{ca.crt,issued/server.crt,issued/client.crt,private/client.key,private/server.key} /etc/openvpn/
 }
 
